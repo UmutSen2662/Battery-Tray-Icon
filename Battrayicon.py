@@ -2,6 +2,8 @@ from PIL import Image, ImageDraw, ImageFont
 import psutil, time, json, os, Logs, Chart
 import pystray as ps
 run = True
+log = False
+chart = False
 
 def main():
     battery_percent = psutil.sensors_battery().percent
@@ -9,10 +11,18 @@ def main():
                     menu=ps.Menu(ps.MenuItem("Logs", on_clicked), ps.MenuItem("Chart", on_clicked), ps.MenuItem("Exit", on_clicked)))
     icon.run_detached()
     global run
+    global log
+    global chart
     while (run):
+        if log:
+            Logs.show_logs()
+            log = False
+        elif chart:
+            Chart.show_chart()
+            chart = False
         battery_percent = update(icon, battery_percent)
-        print(battery_percent)
-        time.sleep(3)
+        #print(battery_percent)
+        time.sleep(2)
     return
 
 def create_tray_image(text):
@@ -23,18 +33,20 @@ def create_tray_image(text):
 
 def on_clicked(icon, item):
     global run
+    global log
+    global chart
     if str(item) == "Exit":
         icon.stop()
         run = False
-        print("exit")
+        #print("exit")
     elif str(item) == "Chart":
         battery_percent = psutil.sensors_battery().percent
         log_data(battery_percent)
-        Chart.show_chart()
-        print("chart")
+        chart = True
+        #print("chart")
     elif str(item) == "Logs":
-        Logs.show_logs()
-        print("logs")
+        log = True
+        #print("logs")
 
 def update(icon, old_battery_percent):
     battery_percent = psutil.sensors_battery().percent
