@@ -4,7 +4,7 @@ Battery Tray Icon is a windows tray icon app made with python. It checks the bat
 
 ## Installation
 
-To install you can either clone this repo and import the nececasrry python libraries or you can click dowload as zip in the green code button and extact to do the same thing.
+To install you can either clone this repo and import the nececasrry python libraries or you can click dowload as zip in the green code button and extact to do the same thing or you can go and dowload the zip from the releases tab.
 
 ## Roadmap
 
