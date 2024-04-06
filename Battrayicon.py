@@ -1,28 +1,30 @@
 from PIL import Image, ImageDraw, ImageFont
-import psutil, time, json, os, Logs, Chart
+import psutil, time, json, os, Logs, Plot
 import pystray as ps
-run = True
+plot = False
 log = False
-chart = False
+run = True
 
 def main():
     battery_percent = psutil.sensors_battery().percent
-    icon = ps.Icon('Battray', icon=create_tray_image(str(battery_percent)), 
-                    menu=ps.Menu(ps.MenuItem("Logs", on_clicked), ps.MenuItem("Chart", on_clicked), ps.MenuItem("Exit", on_clicked)))
+    icon = ps.Icon('Battray', icon=create_tray_image(str(battery_percent)), menu=ps.Menu(ps.MenuItem("Plot", on_clicked), ps.MenuItem("Logs", on_clicked), ps.MenuItem("Exit", on_clicked)))
     icon.run_detached()
-    global run
+    global plot
     global log
-    global chart
+    global run
+    times = 0
     while (run):
-        if log:
+        times += 1
+        if times > 1000:
+            battery_percent = update(icon, battery_percent)
+            times = 0
+        if plot:
+            Plot.plot_graph()
+            plot = False
+        elif log:
             Logs.show_logs()
             log = False
-        elif chart:
-            Chart.show_chart()
-            chart = False
-        battery_percent = update(icon, battery_percent)
-        #print(battery_percent)
-        time.sleep(2)
+        time.sleep(0.5)
     return
 
 def create_tray_image(text):
@@ -34,37 +36,47 @@ def create_tray_image(text):
 def on_clicked(icon, item):
     global run
     global log
-    global chart
+    global plot
     if str(item) == "Exit":
         icon.stop()
         run = False
-        #print("exit")
-    elif str(item) == "Chart":
+    elif str(item) == "Plot":
         battery_percent = psutil.sensors_battery().percent
-        log_data(battery_percent)
-        chart = True
-        #print("chart")
+        update(icon, battery_percent)
+        plot = True
     elif str(item) == "Logs":
+        battery_percent = psutil.sensors_battery().percent
+        update(icon, battery_percent)
         log = True
-        #print("logs")
 
 def update(icon, old_battery_percent):
-    battery_percent = psutil.sensors_battery().percent
-    icon.icon = create_tray_image(str(battery_percent))
-    if (battery_percent != old_battery_percent):
-        log_data(battery_percent)
-    return battery_percent
+    print("update")
+    if not log and not plot:
+        battery_percent = psutil.sensors_battery().percent
+        if (battery_percent != old_battery_percent):
+            icon.icon = create_tray_image(str(battery_percent))
+            log_data(battery_percent)
+        return battery_percent
+    return old_battery_percent
 
 def log_data(percent):
     if os.path.exists('Log.json'):
+        DAY = 86400
         with open("Log.json") as file:
             data = json.load(file)
-            data["percents"].append(percent)
-            data["times"].append(int(time.time()))
+            if data["percent"][-1] != percent:
+                data["percent"].append(percent)
+                data["time"].append(int(time.time()))
+            else:
+                data["time"][-1] = int(time.time())
+            
+            while (data["time"][-1] - data["time"][0]) > (DAY * 7):
+                data["time"] = data["time"][1:]
+                data["percent"] = data["percent"][1:]
     else:
-        data = {"percents" : [percent],
-                "times" : [int(time.time())]}
-        
+        data = {"percent" : [percent],
+                "time" : [int(time.time())]}
+    
     with open("Log.json", "w") as file:
         json.dump(data, file)
 

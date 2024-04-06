@@ -10,14 +10,13 @@ def show_logs():
    rows = []
    with open("Log.json") as file:
       data = json.load(file)
-      percents = data["percents"]
-      times = data["times"]
-      times = list(map(lambda x: str(datetime.fromtimestamp(x)), times))
-      times = list(map(lambda x: x[:10] + "  " + x[-9:-3], times))
+      percents = data["percent"]
+      times = data["time"]
+      times = [ str(datetime.fromtimestamp(x)) for x in times ]
+      times = [ (x[:10] + "  " + x[-9:-3]) for x in times ]
       
       for idx, time in enumerate(times):
          rows.append([time, percents[idx]])
-
 
    tbl1 = sg.Table(values=rows, headings=toprow,
       auto_size_columns=True,
@@ -43,8 +42,8 @@ def show_logs():
          if event == "Delete Selected":
             for idx in sorted(choice, reverse=True):
                rows.pop(idx)
-               data["times"].pop(idx)
-               data["percents"].pop(idx)
+               data["time"].pop(idx)
+               data["percent"].pop(idx)
             tbl1.update(values=rows)
       
       if event == "Save and Exit":
@@ -54,3 +53,6 @@ def show_logs():
          break
 
    window.close()
+
+if __name__ == "__main__":
+    show_logs()
