@@ -15,7 +15,7 @@ def main():
     times = 0
     while (run):
         times += 1
-        if times > 240:
+        if times > 40:
             battery_percent = update(icon, battery_percent)
             times = 0
         if plot:
@@ -24,7 +24,7 @@ def main():
         elif log:
             Logs.show_logs()
             log = False
-        time.sleep(0.5)
+        time.sleep(0.2)
     return
 
 def create_tray_image(text):
