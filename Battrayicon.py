@@ -15,7 +15,7 @@ def main():
     times = 0
     while (run):
         times += 1
-        if times > 1000:
+        if times > 240:
             battery_percent = update(icon, battery_percent)
             times = 0
         if plot:
