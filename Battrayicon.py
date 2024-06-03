@@ -1,29 +1,36 @@
 from PIL import Image, ImageDraw, ImageFont
 import psutil, time, json, os, Logs, Plot
 import pystray as ps
-plot = False
-log = False
+
 run = True
+log = False
+plot = False
 
 def main():
     battery_percent = psutil.sensors_battery().percent
-    icon = ps.Icon('Battray', icon=create_tray_image(str(battery_percent)), menu=ps.Menu(ps.MenuItem("Plot", on_clicked), ps.MenuItem("Logs", on_clicked), ps.MenuItem("Exit", on_clicked)))
+    battery_charging = psutil.sensors_battery().power_plugged
+    icon = ps.Icon(name="Battray", 
+                   title=("Charging" if battery_charging else "Discharging"), 
+                   icon=create_tray_image(str(battery_percent)), 
+                   menu=ps.Menu(ps.MenuItem("Plot", on_clicked), 
+                                ps.MenuItem("Logs", on_clicked), 
+                                ps.MenuItem("Exit", on_clicked)))
     icon.run_detached()
-    global plot
-    global log
-    global run
-    times = 0
+    global run, log, plot
     while (run):
-        times += 1
-        if times > 40:
-            battery_percent = update(icon, battery_percent)
-            times = 0
+        if (psutil.sensors_battery().power_plugged != battery_charging):
+            battery_charging = not battery_charging
+            icon.title = ("Charging" if battery_charging else "Discharging")
+        
         if plot:
             Plot.plot_graph()
             plot = False
         elif log:
             Logs.show_logs()
             log = False
+        else:
+            battery_percent = update(icon, battery_percent)
+        
         time.sleep(0.2)
     return
 
@@ -34,28 +41,21 @@ def create_tray_image(text):
     return image
 
 def on_clicked(icon, item):
-    global run
-    global log
-    global plot
+    global run, log, plot
     if str(item) == "Exit":
         icon.stop()
         run = False
     elif str(item) == "Plot":
-        battery_percent = psutil.sensors_battery().percent
-        update(icon, battery_percent)
         plot = True
     elif str(item) == "Logs":
-        battery_percent = psutil.sensors_battery().percent
-        update(icon, battery_percent)
         log = True
 
 def update(icon, old_battery_percent):
-    print("update")
-    if not log and not plot:
-        battery_percent = psutil.sensors_battery().percent
-        if (battery_percent != old_battery_percent):
-            icon.icon = create_tray_image(str(battery_percent))
-            log_data(battery_percent)
+    battery_percent = psutil.sensors_battery().percent
+    if (battery_percent != old_battery_percent):
+        print(battery_percent)
+        icon.icon = create_tray_image(str(battery_percent))
+        log_data(battery_percent)
         return battery_percent
     return old_battery_percent
 
