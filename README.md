@@ -8,4 +8,4 @@ To install you can either clone this repo and import the nececasrry python libra
 
 ## Roadmap
 
-This is pretty much a finished app in my mind because I myself have been using it for the last 1-2 years and I don't think I have ever seen it misbehave so it is very stable ant it does the job. 
+This is pretty much a finished app in my mind because I myself have been using it for the last 2-3 years and I don't think I have ever seen it misbehave so it is very stable and it does the job. 
