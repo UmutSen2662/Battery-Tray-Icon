@@ -52,6 +52,7 @@ def get_battery():
             return None
         # the message to be sent to the mouse, see battery_msg() for detail
         msg = battery_msg()
+        print(f"Message sent to the mouse: {list(msg)}")
         # needed by PyUSB
         # if Linux, need to detach kernel driver
         mouse.set_configuration()
@@ -66,13 +67,14 @@ def get_battery():
         result = mouse.ctrl_transfer(bmRequestType=0xa1, bRequest=0x01, wValue=0x300, data_or_wLength=90, wIndex=0x00)
         usb.util.dispose_resources(mouse)
         usb.util.release_interface(mouse, 0)
+        print(f"Message received from the mouse: {list(result)}")
         # the raw battery level is in 0 - 255, scale it to 100 for human, correct to 2 decimal places
     except Exception as e:
         print(e)
         return None
     
-    if (result[-2] <= 122):
-        return f"{result[9] / 255 * 100:.0f}"
+    if (result[-2] <= 130):
+        return int(result[9] / 255 * 100)
     else:
         return None
 
