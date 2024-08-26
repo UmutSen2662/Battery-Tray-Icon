@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 import psutil, time, json, os, Logs, Plot, Razer
 import pystray as ps
 
-FQ = 36000
+FQ = 6000
 run = True
 log = False
 plot = False
@@ -17,16 +17,28 @@ def main():
     icon.run_detached()
 
     repetitions = FQ
+    notified = False
     global run, log, plot
     while (run):
         repetitions += 1
         if (repetitions > FQ):
-            razer_battery = Razer.get_battery()
+            razer_battery = int(Razer.get_battery())
             if razer_battery:
                 icon.title = f"Mouse {razer_battery}%"
                 log_data(battery_percent, razer_battery)
             else:
                 icon.title = "Mouse not found"
+            
+            if not notified:
+                if razer_battery < 25:
+                    icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
+                    notified = True
+                elif razer_battery > 75:
+                    icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
+                    notified = True
+            elif (razer_battery > 20 and razer_battery < 80):
+                notified = False
+
             repetitions = 0
 
         if plot:
@@ -77,17 +89,12 @@ def log_data(percent, razer = None):
             else:
                 data["time"][-1] = int(time.time())
 
-            # Test only
-            if razer:
-                data["razer"].append(razer)
-            
             while (data["time"][-1] - data["time"][0]) > (DAY * 7):
                 data["time"] = data["time"][1:]
                 data["percent"] = data["percent"][1:]
     else:
         data = {"percent" : [percent],
-                "time" : [int(time.time())],
-                "razer" : []}
+                "time" : [int(time.time())]}
     
     with open("Log.json", "w") as file:
         json.dump(data, file)

@@ -1,5 +1,4 @@
 import time
-import logging
 import usb.core
 import usb.util
 from usb.backend import libusb1
@@ -25,7 +24,7 @@ def get_mouse():
         mouse = usb.core.find(idVendor=0x1532, idProduct=WIRED_MOUSE, backend=backend)
         # still not found, then the mouse is not plugged in, log error
         if not mouse:
-            logging.info(f"The specified mouse (PID:{WIRELESS_RECEIVER} or {WIRED_MOUSE}) cannot be found.")
+            print(f"The specified mouse (PID:{WIRELESS_RECEIVER} or {WIRED_MOUSE}) cannot be found.")
     
     return mouse
 
@@ -53,7 +52,6 @@ def get_battery():
             return None
         # the message to be sent to the mouse, see battery_msg() for detail
         msg = battery_msg()
-        logging.info(f"Message sent to the mouse: {list(msg)}")
         # needed by PyUSB
         # if Linux, need to detach kernel driver
         mouse.set_configuration()
@@ -68,18 +66,16 @@ def get_battery():
         result = mouse.ctrl_transfer(bmRequestType=0xa1, bRequest=0x01, wValue=0x300, data_or_wLength=90, wIndex=0x00)
         usb.util.dispose_resources(mouse)
         usb.util.release_interface(mouse, 0)
-        logging.info(f"Message received from the mouse: {list(result)}")
         # the raw battery level is in 0 - 255, scale it to 100 for human, correct to 2 decimal places
     except Exception as e:
-        logging.info(e)
+        print(e)
         return None
     
-    if (result[-2] == 122):
+    if (result[-2] <= 122):
         return f"{result[9] / 255 * 100:.0f}"
     else:
         return None
 
 if __name__ == "__main__":
     battery = get_battery()
-    logging.info(f"Battery level obtained: {battery}")
-    logging.info(battery)
+    print(f"Battery level obtained: {battery}")
