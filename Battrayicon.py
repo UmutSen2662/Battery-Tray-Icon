@@ -34,8 +34,6 @@ def main():
                         notified = True
                 elif (razer_battery > 20 and razer_battery < 80):
                     notified = False
-            else:
-                icon.title = "Mouse not found"
             repetitions = 0
 
         if plot:
