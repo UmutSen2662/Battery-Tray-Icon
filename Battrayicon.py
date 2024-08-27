@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 import psutil, time, json, os, Logs, Plot, Razer
 import pystray as ps
 
-FQ = 6000
+FQ = 600
 run = True
 log = False
 plot = False
