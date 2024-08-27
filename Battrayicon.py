@@ -25,8 +25,6 @@ def main():
             razer_battery = Razer.get_battery()
             if razer_battery:
                 icon.title = f"Mouse {razer_battery}%"
-                log_data(battery_percent, razer_battery)
-
                 if not notified:
                     if razer_battery < 25:
                         icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
@@ -77,7 +75,7 @@ def update(icon, old_battery_percent):
         return battery_percent
     return old_battery_percent
 
-def log_data(percent, razer = None):
+def log_data(percent):
     if os.path.exists('Log.json'):
         DAY = 86400
         with open("Log.json") as file:

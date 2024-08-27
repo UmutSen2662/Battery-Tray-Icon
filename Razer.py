@@ -73,9 +73,11 @@ def get_battery():
         print(e)
         return None
     
-    if (result[-2] <= 130):
-        return int(result[9] / 255 * 100)
-    else:
+    try:
+        if (result[-2] <= 130):
+            return int(result[9] / 255 * 100)
+        return None
+    except Exception as e:
         return None
 
 if __name__ == "__main__":
