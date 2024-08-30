@@ -32,7 +32,7 @@ def main():
                     elif razer_battery > 75:
                         icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
                         notified = True
-                elif (razer_battery > 20 and razer_battery < 80):
+                elif (razer_battery > 25 and razer_battery < 75):
                     notified = False
             repetitions = 0
 
