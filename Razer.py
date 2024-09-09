@@ -74,11 +74,12 @@ def get_battery():
         return None
     
     try:
-        if (result[-2] <= 130):
+        if list(result)[:9] == [2, 31, 0, 0, 0, 2, 7, 128, 0]:
             return int(result[9] / 255 * 100)
         return None
     except Exception as e:
         return None
+
 
 if __name__ == "__main__":
     battery = get_battery()
