@@ -17,23 +17,19 @@ def main():
     icon.run_detached()
 
     repetitions = FQ
-    notified = False
+    razer_battery = 0
     global run, log, plot
     while (run):
         repetitions += 1
         if (repetitions > FQ):
-            razer_battery = Razer.get_battery()
-            if razer_battery:
-                icon.title = f"Mouse {razer_battery}%"
-                if not notified:
-                    if razer_battery < 25:
-                        icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
-                        notified = True
-                    elif razer_battery > 75:
-                        icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
-                        notified = True
-                elif (razer_battery > 25 and razer_battery < 75):
-                    notified = False
+            new_razer_battery = Razer.get_battery()
+            if new_razer_battery:
+                icon.title = f"Mouse {new_razer_battery}%"
+                if new_razer_battery < 25 and new_razer_battery != razer_battery:
+                    icon.notify("Razer mouse battery is low plug in to charge", f"{new_razer_battery}% battery left")
+                elif new_razer_battery > 75 and new_razer_battery != razer_battery:
+                    icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {new_razer_battery}%")
+            razer_battery = new_razer_battery
             repetitions = 0
 
         if plot:
@@ -94,4 +90,5 @@ def log_data(percent):
     with open("Log.json", "w") as file:
         json.dump(data, file)
 
-main()
+if __name__ == "__main__":
+    main()
