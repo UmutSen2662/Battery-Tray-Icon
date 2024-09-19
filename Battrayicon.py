@@ -25,11 +25,11 @@ def main():
             new_razer_battery = Razer.get_battery()
             if new_razer_battery:
                 icon.title = f"Mouse {new_razer_battery}%"
-                if razer_battery - new_razer_battery > 5:
+                if razer_battery - new_razer_battery > 0:
                     if new_razer_battery < 25:
                         icon.notify("Razer mouse battery is low plug in to charge", f"{new_razer_battery}% battery left")
                     razer_battery = new_razer_battery
-                elif new_razer_battery - razer_battery > 5:
+                elif new_razer_battery - razer_battery > 0:
                     if new_razer_battery > 75:
                         icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {new_razer_battery}%")
                     razer_battery = new_razer_battery
