@@ -1,3 +1,4 @@
+# taken almost completely from https://github.com/hsutungyu/razer-mouse-battery-windows/blob/main/mamba.pyw
 import time
 import usb.core
 import usb.util
@@ -52,7 +53,7 @@ def get_battery():
             return None
         # the message to be sent to the mouse, see battery_msg() for detail
         msg = battery_msg()
-        print(f"Message sent to the mouse: {list(msg)}")
+        # print(f"Message sent to the mouse: {list(msg)}")
         # needed by PyUSB
         # if Linux, need to detach kernel driver
         mouse.set_configuration()
@@ -78,9 +79,12 @@ def get_battery():
             return int(result[9] / 255 * 100)
         return None
     except Exception as e:
+        print(e)
         return None
 
 
 if __name__ == "__main__":
-    battery = get_battery()
-    print(f"Battery level obtained: {battery}")
+    while True:
+        battery = get_battery()
+        print(f"Battery level obtained: {battery}")
+        time.sleep(3)
