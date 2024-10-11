@@ -34,11 +34,11 @@ def main():
                     elif razer_battery - new_razer_battery < 0:
                         icon.remove_notification()
                         razer_battery_notification = "normal"
-                elif new_razer_battery > 75:
+                elif new_razer_battery > 70:
                     if new_razer_battery - razer_battery > 0:
                         icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {new_razer_battery}%")
                         razer_battery_notification = "high"
-                    elif new_razer_battery - razer_battery < 0:
+                    elif new_razer_battery < 99:
                         icon.remove_notification()
                         razer_battery_notification = "normal"
                 else:
