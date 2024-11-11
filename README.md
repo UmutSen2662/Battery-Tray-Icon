@@ -1,11 +1,11 @@
 # Battery Tray Icon
 
-Battery Tray Icon is a windows tray icon app made with python. It checks the battery periodically and when it detects a change it will log that change which you can view as a graph later. 
+Battery Tray Icon is a windows tray icon app made with python. It checks the battery periodically and when it detects a change it will log that change which you can view as a graph later
 
 ## Installation
 
-To install you can either clone this repo and import the nececasrry python libraries or you can click dowload as zip in the green code button and extact to do the same thing or you can go and dowload the zip from the releases tab.
+There is a zip file with its own portable python instance to run it in the Releases you can get the zip extract it anywhere and use the app using the run.vbs file
 
-## Roadmap
+## Developement
 
-This is pretty much a finished app in my mind because I myself have been using it for the last 2-3 years and I don't think I have ever seen it misbehave so it is very stable and it does the job. 
+To set it up you can clone this repo and either use a virtual python enviroment or a portable python installation the python version used is python 3.13.0. After that you can import the nececasrry python libraries using the requirements.txt

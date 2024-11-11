@@ -26,7 +26,7 @@ def get_mouse():
         # still not found, then the mouse is not plugged in, log error
         if not mouse:
             print(f"The specified mouse (PID:{WIRELESS_RECEIVER} or {WIRED_MOUSE}) cannot be found.")
-    
+
     return mouse
 
 
@@ -65,7 +65,7 @@ def get_battery():
         # if the mouse is wireless, need to wait before getting response
         time.sleep(0.3305)
         # receive response
-        result = mouse.ctrl_transfer(bmRequestType=0xa1, bRequest=0x01, wValue=0x300, data_or_wLength=90, wIndex=0x00)
+        result = mouse.ctrl_transfer(bmRequestType=0xA1, bRequest=0x01, wValue=0x300, data_or_wLength=90, wIndex=0x00)
         usb.util.dispose_resources(mouse)
         usb.util.release_interface(mouse, 0)
         print(f"Message received from the mouse: {list(result)}")
@@ -73,7 +73,7 @@ def get_battery():
     except Exception as e:
         print(e)
         return None
-    
+
     try:
         if list(result)[:9] == [2, 31, 0, 0, 0, 2, 7, 128, 0]:
             return int(result[9] / 255 * 100)
