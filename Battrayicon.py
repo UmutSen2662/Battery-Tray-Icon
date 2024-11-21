@@ -18,6 +18,7 @@ def main():
     )
     icon.run_detached()
 
+    notify = True
     repetitions = FQ
     razer_battery = None
     razer_battery_state = "normal"
@@ -25,18 +26,26 @@ def main():
     while run:
         repetitions += 1
         if repetitions > FQ:
-            new_razer_battery, wireless = Razer.get_battery()
-            if new_razer_battery:
-                razer_battery = new_razer_battery
+            result = Razer.get_battery()
+            if result:
+                razer_battery, wireless = result
                 icon.title = f"Mouse {razer_battery}%"
-                if razer_battery < 25 and wireless:
+                if razer_battery < 25 and wireless and notify:
                     icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
                     razer_battery_state = "low"
-                elif razer_battery > 70 and not wireless:
+                    notify = False
+                elif razer_battery > 70 and not wireless and notify:
                     icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
                     razer_battery_state = "high"
-                else:
+                    notify = False
+                elif razer_battery > 25 and razer_battery < 70 and not notify:
+                    notify = True
+                    icon.remove_notification()
                     razer_battery_state = "normal"
+            else:
+                notify = True
+                icon.remove_notification()
+                razer_battery_state = "normal"
             repetitions = 0
 
         if plot:

@@ -78,7 +78,7 @@ def get_battery():
 
     try:
         if list(result)[:9] == [2, 31, 0, 0, 0, 2, 7, 128, 0]:
-            return int(result[9] / 255 * 100), wireless
+            return [int(result[9] / 255 * 100), wireless]
         return None
     except Exception as e:
         print(e)
@@ -87,6 +87,9 @@ def get_battery():
 
 if __name__ == "__main__":
     while True:
-        battery, wireless = get_battery()
+        result = get_battery()
+        if result is None:
+            continue
+        battery, wireless = result
         print(f"Battery level obtained from {'wireless' if wireless else 'wired'}: {battery}")
         time.sleep(3)
