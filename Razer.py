@@ -19,15 +19,17 @@ def get_mouse():
     backend = libusb1.get_backend()
     # find the mouse by PyUSB
     mouse = usb.core.find(idVendor=0x1532, idProduct=WIRELESS_RECEIVER, backend=backend)
+    wireless = True
     # if the receiver is not found, mouse would be None
     if not mouse:
         # try finding the wired mouse
         mouse = usb.core.find(idVendor=0x1532, idProduct=WIRED_MOUSE, backend=backend)
+        wireless = False
         # still not found, then the mouse is not plugged in, log error
         if not mouse:
             print(f"The specified mouse (PID:{WIRELESS_RECEIVER} or {WIRED_MOUSE}) cannot be found.")
 
-    return mouse
+    return mouse, wireless
 
 
 def battery_msg():
@@ -48,7 +50,7 @@ def battery_msg():
 def get_battery():
     try:
         # find the mouse and the state, see get_mouse() for detail
-        mouse = get_mouse()
+        mouse, wireless = get_mouse()
         if not mouse:
             return None
         # the message to be sent to the mouse, see battery_msg() for detail
@@ -76,7 +78,7 @@ def get_battery():
 
     try:
         if list(result)[:9] == [2, 31, 0, 0, 0, 2, 7, 128, 0]:
-            return int(result[9] / 255 * 100)
+            return int(result[9] / 255 * 100), wireless
         return None
     except Exception as e:
         print(e)
@@ -85,6 +87,6 @@ def get_battery():
 
 if __name__ == "__main__":
     while True:
-        battery = get_battery()
-        print(f"Battery level obtained: {battery}")
+        battery, wireless = get_battery()
+        print(f"Battery level obtained from {'wireless' if wireless else 'wired'}: {battery}")
         time.sleep(3)

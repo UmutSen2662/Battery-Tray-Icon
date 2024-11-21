@@ -1,4 +1,4 @@
-import psutil, time, json, os, Logs, Plot, Razer, sys # type: ignore
+import psutil, time, json, os, Logs, Plot, Razer, sys  # type: ignore
 from PIL import Image, ImageDraw, ImageFont
 import pystray as ps
 
@@ -19,35 +19,24 @@ def main():
     icon.run_detached()
 
     repetitions = FQ
-    razer_battery = 50
-    razer_battery_notification = "normal"
+    razer_battery = None
+    razer_battery_state = "normal"
     global run, log, plot
     while run:
         repetitions += 1
         if repetitions > FQ:
-            new_razer_battery = Razer.get_battery()
+            new_razer_battery, wireless = Razer.get_battery()
             if new_razer_battery:
-                icon.title = f"Mouse {new_razer_battery}%"
-                if new_razer_battery < 25:
-                    if razer_battery - new_razer_battery > 0:
-                        icon.notify(
-                            "Razer mouse battery is low plug in to charge", f"{new_razer_battery}% battery left"
-                        )
-                        razer_battery_notification = "low"
-                    elif razer_battery - new_razer_battery < 0:
-                        icon.remove_notification()
-                        razer_battery_notification = "normal"
-                elif new_razer_battery > 70:
-                    if new_razer_battery - razer_battery > 0:
-                        icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {new_razer_battery}%")
-                        razer_battery_notification = "high"
-                    elif new_razer_battery < 99:
-                        icon.remove_notification()
-                        razer_battery_notification = "normal"
-                else:
-                    icon.remove_notification()
-                    razer_battery_notification = "normal"
                 razer_battery = new_razer_battery
+                icon.title = f"Mouse {razer_battery}%"
+                if razer_battery < 25 and wireless:
+                    icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
+                    razer_battery_state = "low"
+                elif razer_battery > 70 and not wireless:
+                    icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
+                    razer_battery_state = "high"
+                else:
+                    razer_battery_state = "normal"
             repetitions = 0
 
         if plot:
@@ -57,7 +46,7 @@ def main():
             Logs.show_logs()
             log = False
         elif repetitions % 50 == 0:
-            battery_percent = update(icon, battery_percent, razer_battery_notification)
+            battery_percent = update(icon, battery_percent, razer_battery_state)
 
         time.sleep(0.1)
     return
@@ -74,11 +63,11 @@ def on_clicked(icon, item):
         log = True
 
 
-def create_tray_image(text, razer_battery_notification="normal"):
+def create_tray_image(text, razer_battery_state="normal"):
     fill_color = (
         (255, 0, 0)
-        if razer_battery_notification == "low"
-        else (0, 255, 0) if razer_battery_notification == "high" else (255, 255, 255)
+        if razer_battery_state == "low"
+        else (0, 255, 0) if razer_battery_state == "high" else (255, 255, 255)
     )
     image = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     dc = ImageDraw.Draw(image)
@@ -88,10 +77,9 @@ def create_tray_image(text, razer_battery_notification="normal"):
     return image
 
 
-def update(icon, old_battery_percent, razer_battery_notification):
+def update(icon, old_battery_percent, razer_battery_state):
     battery_percent = psutil.sensors_battery().percent
-    print(battery_percent)
-    icon.icon = create_tray_image(str(battery_percent), razer_battery_notification)
+    icon.icon = create_tray_image(str(battery_percent), razer_battery_state)
     if battery_percent != old_battery_percent:
         log_data(battery_percent)
         return battery_percent
