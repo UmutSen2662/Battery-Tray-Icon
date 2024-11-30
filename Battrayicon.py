@@ -18,7 +18,7 @@ def main():
     )
     icon.run_detached()
 
-    notify = True
+    notified = False
     repetitions = FQ
     razer_battery = None
     razer_battery_state = "normal"
@@ -30,20 +30,31 @@ def main():
             if result:
                 razer_battery, wireless = result
                 icon.title = f"Mouse {razer_battery}%"
-                if razer_battery < 25 and wireless and notify:
-                    icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
-                    razer_battery_state = "low"
-                    notify = False
-                elif razer_battery > 70 and not wireless and notify:
-                    icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
-                    razer_battery_state = "high"
-                    notify = False
-                elif razer_battery > 25 and razer_battery < 70 and not notify:
-                    notify = True
-                    icon.remove_notification()
-                    razer_battery_state = "normal"
+
+                if notified:
+                    if razer_battery_state == "low" and not wireless:
+                        icon.remove_notification()
+                        razer_battery_state = "normal"
+                    elif razer_battery_state == "high" and wireless:
+                        icon.remove_notification()
+                        razer_battery_state = "normal"
+
+                    if razer_battery > 30 and razer_battery < 60:
+                        notified = False
+                        razer_battery_state = "normal"
+                else:
+                    notified = True
+                    if razer_battery > 70 and wireless:
+                        icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
+                        razer_battery_state = "high"
+                    elif razer_battery < 25 and not wireless:
+                        icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
+                        razer_battery_state = "low"
+                    else:
+                        icon.remove_notification()
+                        razer_battery_state = "normal"
+                        notified = False
             else:
-                notify = True
                 icon.remove_notification()
                 razer_battery_state = "normal"
             repetitions = 0
