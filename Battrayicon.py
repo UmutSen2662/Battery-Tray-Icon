@@ -44,10 +44,10 @@ def main():
                         razer_battery_state = "normal"
                 else:
                     notified = True
-                    if razer_battery > 70 and wireless:
+                    if razer_battery > 70 and not wireless:
                         icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
                         razer_battery_state = "high"
-                    elif razer_battery < 25 and not wireless:
+                    elif razer_battery < 25 and wireless:
                         icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
                         razer_battery_state = "low"
                     else:
