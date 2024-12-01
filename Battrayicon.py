@@ -2,7 +2,7 @@ import psutil, time, json, os, Logs, Plot, Razer, sys  # type: ignore
 from PIL import Image, ImageDraw, ImageFont
 import pystray as ps
 
-FQ = 600
+FQ = 100
 run = True
 log = False
 plot = False
@@ -25,6 +25,16 @@ def main():
     global run, log, plot
     while run:
         repetitions += 1
+
+        if plot:
+            Plot.plot_graph()
+            plot = False
+        elif log:
+            Logs.show_logs()
+            log = False
+        elif repetitions > FQ:
+            battery_percent = update(icon, battery_percent, razer_battery_state)
+
         if repetitions > FQ:
             result = Razer.get_battery()
             if result:
@@ -58,15 +68,6 @@ def main():
                 icon.remove_notification()
                 razer_battery_state = "normal"
             repetitions = 0
-
-        if plot:
-            Plot.plot_graph()
-            plot = False
-        elif log:
-            Logs.show_logs()
-            log = False
-        elif repetitions % 50 == 0:
-            battery_percent = update(icon, battery_percent, razer_battery_state)
 
         time.sleep(0.1)
     return
