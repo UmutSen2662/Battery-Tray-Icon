@@ -18,7 +18,6 @@ def main():
     )
     icon.run_detached()
 
-    notified = False
     repetitions = FQ
     razer_battery = None
     razer_battery_state = "normal"
@@ -41,32 +40,21 @@ def main():
                 razer_battery, wireless = result
                 icon.title = f"Mouse {razer_battery}%"
 
-                if notified:
-                    if razer_battery_state == "low" and not wireless:
-                        icon.remove_notification()
-                        razer_battery_state = "normal"
-                    elif razer_battery_state == "high" and wireless:
-                        icon.remove_notification()
-                        razer_battery_state = "normal"
-
-                    if razer_battery > 30 and razer_battery < 60:
-                        notified = False
-                        razer_battery_state = "normal"
-                else:
-                    notified = True
-                    if razer_battery > 70 and not wireless:
-                        icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
-                        razer_battery_state = "high"
-                    elif razer_battery < 25 and wireless:
+                if wireless and razer_battery < 25:
+                    if razer_battery_state != "low":
                         icon.notify("Razer mouse battery is low plug in to charge", f"{razer_battery}% battery left")
-                        razer_battery_state = "low"
-                    else:
-                        icon.remove_notification()
-                        razer_battery_state = "normal"
-                        notified = False
+                    razer_battery_state = "low"
+                elif wireless and razer_battery > 70:
+                    if razer_battery_state != "high":
+                        icon.notify("Razer mouse battery is sufficiently charged", f"Charged to {razer_battery}%")
+                    razer_battery_state = "high"
+                else:
+                    icon.remove_notification()
+                    razer_battery_state = "normal"
             else:
                 icon.remove_notification()
                 razer_battery_state = "normal"
+
             repetitions = 0
 
         time.sleep(0.1)
