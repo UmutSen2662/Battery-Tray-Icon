@@ -16,7 +16,12 @@ TRAN_ID = b"\x1f"
 
 def get_mouse():
     # declare backend: libusb1.0
-    backend = libusb1.get_backend()
+    backend = libusb1.get_backend(find_library=lambda x: "./libusb-1.0.dll")
+    print(backend)
+
+    d = usb.core.find(find_all=True, backend=backend)
+    print(list(d))
+
     # find the mouse by PyUSB
     mouse = usb.core.find(idVendor=0x1532, idProduct=WIRELESS_RECEIVER, backend=backend)
     wireless = True
@@ -27,7 +32,9 @@ def get_mouse():
         wireless = False
         # still not found, then the mouse is not plugged in, log error
         if not mouse:
-            print(f"The specified mouse (PID:{WIRELESS_RECEIVER} or {WIRED_MOUSE}) cannot be found.")
+            print(
+                f"The specified mouse (PID:{WIRELESS_RECEIVER} or {WIRED_MOUSE}) cannot be found."
+            )
 
     return mouse, wireless
 
@@ -61,13 +68,25 @@ def get_battery():
         mouse.set_configuration()
         usb.util.claim_interface(mouse, 0)
         # send request (battery), see razer_send_control_msg in razercommon.c in OpenRazer driver for detail
-        mouse.ctrl_transfer(bmRequestType=0x21, bRequest=0x09, wValue=0x300, data_or_wLength=msg, wIndex=0x00)
+        mouse.ctrl_transfer(
+            bmRequestType=0x21,
+            bRequest=0x09,
+            wValue=0x300,
+            data_or_wLength=msg,
+            wIndex=0x00,
+        )
         # needed by PyUSB
         usb.util.dispose_resources(mouse)
         # if the mouse is wireless, need to wait before getting response
         time.sleep(0.3305)
         # receive response
-        result = mouse.ctrl_transfer(bmRequestType=0xA1, bRequest=0x01, wValue=0x300, data_or_wLength=90, wIndex=0x00)
+        result = mouse.ctrl_transfer(
+            bmRequestType=0xA1,
+            bRequest=0x01,
+            wValue=0x300,
+            data_or_wLength=90,
+            wIndex=0x00,
+        )
         usb.util.dispose_resources(mouse)
         usb.util.release_interface(mouse, 0)
         print(f"Message received from the mouse: {list(result)}")
@@ -89,7 +108,10 @@ if __name__ == "__main__":
     while True:
         result = get_battery()
         if result is None:
+            time.sleep(3)
             continue
         battery, wireless = result
-        print(f"Battery level obtained from {'wireless' if wireless else 'wired'}: {battery}")
+        print(
+            f"Battery level obtained from {'wireless' if wireless else 'wired'}: {battery}"
+        )
         time.sleep(3)
