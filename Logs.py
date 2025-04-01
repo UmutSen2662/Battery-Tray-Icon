@@ -1,66 +1,112 @@
-from datetime import datetime  # type: ignore
-import PySimpleGUI as sg
+import sys
 import json
+from datetime import datetime
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QTableWidget,
+    QTableWidgetItem,
+    QPushButton,
+    QHeaderView,
+)
 
 
-def show_logs():
-    sg.theme("Dark Grey 13")
-    sg.set_options(font=("None", 14))
+class LogWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Table Demo")
+        self.setGeometry(100, 100, 400, 750)
 
-    toprow = ["Time", "Percent"]
-    rows = []
-    with open("Log.json") as file:
-        data = json.load(file)
-        percents = data["percent"]
-        times = data["time"]
-        times = [str(datetime.fromtimestamp(x)) for x in times]
-        times = [(x[:10] + "  " + x[-9:-3]) for x in times]
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
 
-        for idx, time in enumerate(times):
-            rows.append([time, percents[idx]])
+        self.title_label = QLabel("Battery Charge Logs")
+        self.title_label.setAlignment(Qt.AlignCenter)  # Use Qt.AlignCenter from PySide6.QtCore
+        self.layout.addWidget(self.title_label)
+        # Set the title font
+        title_font = QFont()
+        title_font.setPointSize(16)
+        title_font.setBold(True)
+        self.title_label.setFont(title_font)
 
-    tbl1 = sg.Table(
-        values=rows,
-        headings=toprow,
-        auto_size_columns=True,
-        display_row_numbers=False,
-        justification="center",
-        key="-TABLE-",
-        enable_events=True,
-        expand_x=True,
-        expand_y=True,
-        enable_click_events=True,
-    )
+        self.table = QTableWidget()
+        self.layout.addWidget(self.table)
 
-    layout = [
-        [sg.Text("Battery Charge Logs", expand_x=True, justification="cneter", font=("none", 18))],
-        [tbl1],
-        [sg.Button("Delete Selected"), sg.Push(), sg.Button("Save and Exit")],
-    ]
-    window = sg.Window("Table Demo", layout, size=(400, 750), resizable=True)
+        self.button_layout = QHBoxLayout()
+        self.delete_button = QPushButton("Delete Selected")
+        self.save_exit_button = QPushButton("Save and Exit")
+        self.button_layout.addWidget(self.delete_button)
+        self.button_layout.addStretch()
+        self.button_layout.addWidget(self.save_exit_button)
+        self.layout.addLayout(self.button_layout)
 
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED:
-            break
+        self.load_logs()
 
-        if values["-TABLE-"] != []:
-            choice = values["-TABLE-"]
-            if event == "Delete Selected":
-                for idx in sorted(choice, reverse=True):
-                    rows.pop(idx)
-                    data["time"].pop(idx)
-                    data["percent"].pop(idx)
-                tbl1.update(values=rows)
+        self.delete_button.clicked.connect(self.delete_selected)
+        self.save_exit_button.clicked.connect(self.save_and_exit)
+        self.delete_button.setStyleSheet("padding: 8px 16px;")
+        self.save_exit_button.setStyleSheet("padding: 8px 16px;")
 
-        if event == "Save and Exit":
-            print("Saved")
-            with open("Log.json", "w") as file:
-                json.dump(data, file)
-            break
+    def load_logs(self):
+        try:
+            with open("Log.json") as file:
+                data = json.load(file)
+                percents = data["percent"]
+                times = data["time"]
+                times = [str(datetime.fromtimestamp(x)) for x in times]
+                times = [(x[:10] + "  " + x[-9:-3]) for x in times]
 
-    window.close()
+                self.table.setRowCount(len(times))
+                self.table.setColumnCount(2)
+                self.table.setHorizontalHeaderLabels(["Time", "Percent"])
+                self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+                for row, (time, percent) in enumerate(zip(times, percents)):
+                    item_time = QTableWidgetItem(time)
+                    item_percent = QTableWidgetItem(str(percent))
+
+                    # Disable editing for both items
+                    item_time.setFlags(item_time.flags() & ~Qt.ItemIsEditable)
+                    item_percent.setFlags(item_percent.flags() & ~Qt.ItemIsEditable)
+
+                    self.table.setItem(row, 0, item_time)
+                    self.table.setItem(row, 1, item_percent)
+
+                self.data = data
+        except FileNotFoundError:
+            self.data = {"time": [], "percent": []}
+            self.table.setRowCount(0)
+            self.table.setColumnCount(2)
+            self.table.setHorizontalHeaderLabels(["Time", "Percent"])
+            self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+    def delete_selected(self):
+        selected_rows = sorted(set(index.row() for index in self.table.selectedIndexes()), reverse=True)
+        for row in selected_rows:
+            self.table.removeRow(row)
+            self.data["time"].pop(row)
+            self.data["percent"].pop(row)
+
+    def save_and_exit(self):
+        print("Saved")
+        with open("Log.json", "w") as file:
+            json.dump(self.data, file)
+        self.close()
 
 
 if __name__ == "__main__":
-    show_logs()
+    app = QApplication(sys.argv)
+
+    # Set the global font
+    global_font = QFont()
+    global_font.setPointSize(12)
+    app.setFont(global_font)
+
+    window = LogWindow()
+    window.show()
+    sys.exit(app.exec())
