@@ -99,7 +99,7 @@ class LogWindow(QWidget):
         self.close()
 
 
-if __name__ == "__main__":
+def show_logs():
     app = QApplication(sys.argv)
 
     # Set the global font
@@ -110,3 +110,7 @@ if __name__ == "__main__":
     window = LogWindow()
     window.show()
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    show_logs()
