@@ -1,5 +1,4 @@
-import sys
-import json
+import sys, json, gc
 from datetime import datetime
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
@@ -100,16 +99,20 @@ class LogWindow(QWidget):
 
 
 def show_logs():
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
+    if not app:
+        app = QApplication(sys.argv)
 
-    # Set the global font
     global_font = QFont()
     global_font.setPointSize(12)
     app.setFont(global_font)
 
     window = LogWindow()
     window.show()
-    sys.exit(app.exec())
+
+    app.exec()
+
+    print("Exit")
 
 
 if __name__ == "__main__":
